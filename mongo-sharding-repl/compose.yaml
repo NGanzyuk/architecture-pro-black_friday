@@ -1,0 +1,89 @@
+name: mongo-sharding-repl
+
+services:
+  configsrv:
+    container_name: mongo-sharding-repl-configsrv
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      - mongod
+      - --configsvr
+      - --replSet
+      - configReplSet
+      - --port
+      - "27017"
+      - --bind_ip_all
+      - --wiredTigerCacheSizeGB
+      - "0.25"
+    volumes:
+      - configsrv_data:/data/db
+
+  shard1-1:
+    container_name: mongo-sharding-repl-shard1-1
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command: ["mongod", "--shardsvr", "--replSet", "shard1ReplSet", "--port", "27017", "--bind_ip_all", "--oplogSize", "128", "--wiredTigerCacheSizeGB", "0.25"]
+    volumes:
+      - shard1_1_data:/data/db
+  shard1-2:
+    container_name: mongo-sharding-repl-shard1-2
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command: ["mongod", "--shardsvr", "--replSet", "shard1ReplSet", "--port", "27017", "--bind_ip_all", "--oplogSize", "128", "--wiredTigerCacheSizeGB", "0.25"]
+    volumes:
+      - shard1_2_data:/data/db
+  shard1-3:
+    container_name: mongo-sharding-repl-shard1-3
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command: ["mongod", "--shardsvr", "--replSet", "shard1ReplSet", "--port", "27017", "--bind_ip_all", "--oplogSize", "128", "--wiredTigerCacheSizeGB", "0.25"]
+    volumes:
+      - shard1_3_data:/data/db
+
+  shard2-1:
+    container_name: mongo-sharding-repl-shard2-1
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command: ["mongod", "--shardsvr", "--replSet", "shard2ReplSet", "--port", "27017", "--bind_ip_all", "--oplogSize", "128", "--wiredTigerCacheSizeGB", "0.25"]
+    volumes:
+      - shard2_1_data:/data/db
+  shard2-2:
+    container_name: mongo-sharding-repl-shard2-2
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command: ["mongod", "--shardsvr", "--replSet", "shard2ReplSet", "--port", "27017", "--bind_ip_all", "--oplogSize", "128", "--wiredTigerCacheSizeGB", "0.25"]
+    volumes:
+      - shard2_2_data:/data/db
+  shard2-3:
+    container_name: mongo-sharding-repl-shard2-3
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command: ["mongod", "--shardsvr", "--replSet", "shard2ReplSet", "--port", "27017", "--bind_ip_all", "--oplogSize", "128", "--wiredTigerCacheSizeGB", "0.25"]
+    volumes:
+      - shard2_3_data:/data/db
+
+  mongos:
+    container_name: mongo-sharding-repl-mongos
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command: ["mongos", "--configdb", "configReplSet/configsrv:27017", "--port", "27017", "--bind_ip_all"]
+    depends_on:
+      - configsrv
+      - shard1-1
+      - shard1-2
+      - shard1-3
+      - shard2-1
+      - shard2-2
+      - shard2-3
+
+  pymongo-api:
+    container_name: mongo-sharding-repl-pymongo-api
+    image: kazhem/pymongo_api:1.0.0
+    depends_on:
+      - mongos
+    ports:
+      - "8080:8080"
+    environment:
+      MONGODB_URL: mongodb://mongos:27017
+      MONGODB_DATABASE_NAME: somedb
+
+volumes:
+  configsrv_data:
+  shard1_1_data:
+  shard1_2_data:
+  shard1_3_data:
+  shard2_1_data:
+  shard2_2_data:
+  shard2_3_data:
