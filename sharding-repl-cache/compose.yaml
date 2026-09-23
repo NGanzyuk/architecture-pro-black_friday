@@ -3,7 +3,7 @@ name: sharding-repl-cache
 services:
   configsrv:
     container_name: sharding-repl-cache-configsrv
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: dh-mirror.gitverse.ru/mongo:7.0.43-jammy
     command:
       - mongod
       - --configsvr
@@ -19,45 +19,45 @@ services:
 
   shard1-1:
     container_name: sharding-repl-cache-shard1-1
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: dh-mirror.gitverse.ru/mongo:7.0.43-jammy
     command: ["mongod", "--shardsvr", "--replSet", "shard1ReplSet", "--port", "27017", "--bind_ip_all", "--oplogSize", "128", "--wiredTigerCacheSizeGB", "0.25"]
     volumes:
       - shard1_1_data:/data/db
   shard1-2:
     container_name: sharding-repl-cache-shard1-2
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: dh-mirror.gitverse.ru/mongo:7.0.43-jammy
     command: ["mongod", "--shardsvr", "--replSet", "shard1ReplSet", "--port", "27017", "--bind_ip_all", "--oplogSize", "128", "--wiredTigerCacheSizeGB", "0.25"]
     volumes:
       - shard1_2_data:/data/db
   shard1-3:
     container_name: sharding-repl-cache-shard1-3
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: dh-mirror.gitverse.ru/mongo:7.0.43-jammy
     command: ["mongod", "--shardsvr", "--replSet", "shard1ReplSet", "--port", "27017", "--bind_ip_all", "--oplogSize", "128", "--wiredTigerCacheSizeGB", "0.25"]
     volumes:
       - shard1_3_data:/data/db
 
   shard2-1:
     container_name: sharding-repl-cache-shard2-1
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: dh-mirror.gitverse.ru/mongo:7.0.43-jammy
     command: ["mongod", "--shardsvr", "--replSet", "shard2ReplSet", "--port", "27017", "--bind_ip_all", "--oplogSize", "128", "--wiredTigerCacheSizeGB", "0.25"]
     volumes:
       - shard2_1_data:/data/db
   shard2-2:
     container_name: sharding-repl-cache-shard2-2
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: dh-mirror.gitverse.ru/mongo:7.0.43-jammy
     command: ["mongod", "--shardsvr", "--replSet", "shard2ReplSet", "--port", "27017", "--bind_ip_all", "--oplogSize", "128", "--wiredTigerCacheSizeGB", "0.25"]
     volumes:
       - shard2_2_data:/data/db
   shard2-3:
     container_name: sharding-repl-cache-shard2-3
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: dh-mirror.gitverse.ru/mongo:7.0.43-jammy
     command: ["mongod", "--shardsvr", "--replSet", "shard2ReplSet", "--port", "27017", "--bind_ip_all", "--oplogSize", "128", "--wiredTigerCacheSizeGB", "0.25"]
     volumes:
       - shard2_3_data:/data/db
 
   mongos:
     container_name: sharding-repl-cache-mongos
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: dh-mirror.gitverse.ru/mongo:7.0.43-jammy
     command: ["mongos", "--configdb", "configReplSet/configsrv:27017", "--port", "27017", "--bind_ip_all"]
     depends_on:
       - configsrv

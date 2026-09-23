@@ -3,7 +3,7 @@ name: mongo-sharding
 services:
   configsrv:
     container_name: mongo-sharding-configsrv
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: dh-mirror.gitverse.ru/mongo:7.0.43-jammy
     command:
       - mongod
       - --configsvr
@@ -19,7 +19,7 @@ services:
 
   shard1:
     container_name: mongo-sharding-shard1
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: dh-mirror.gitverse.ru/mongo:7.0.43-jammy
     command:
       - mongod
       - --shardsvr
@@ -35,7 +35,7 @@ services:
 
   shard2:
     container_name: mongo-sharding-shard2
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: dh-mirror.gitverse.ru/mongo:7.0.43-jammy
     command:
       - mongod
       - --shardsvr
@@ -51,7 +51,7 @@ services:
 
   mongos:
     container_name: mongo-sharding-mongos
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: dh-mirror.gitverse.ru/mongo:7.0.43-jammy
     command:
       - mongos
       - --configdb

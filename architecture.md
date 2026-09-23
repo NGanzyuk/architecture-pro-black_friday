@@ -224,6 +224,50 @@ Resharding и массовые миграции запускаются конт�
 сеть и способны временно увеличить latency. До операции проверяются резервная
 копия, свободное место и отсутствие конкурирующих index build.
 
+### 3.3. Zoned (tag-aware) sharding
+
+Zoned sharding добавляет к обычному балансированию явное правило размещения:
+диапазон значений shard key связывается с зоной, а зона — с одним или несколькими
+шардами. Balancer оставляет chunks этого диапазона только на шардах его зоны.
+Механизм полезен для географической локализации данных, соблюдения требований к
+месту хранения, разделения hot/cold-данных и размещения особенно нагруженной
+части каталога на более производительном оборудовании.
+
+Для «Мобильного мира» возможен отдельный вариант для горячей категории
+`electronics`. Ключ должен начинаться с поля, по которому задаётся зона, а
+хешированная часть распределяет товары внутри неё:
+
+```javascript
+sh.shardCollection(
+  "shop.products",
+  { category: 1, _id: "hashed" }
+)
+
+// Имена условные: это два отдельных производительных shard replica set.
+sh.addShardToZone("hotShard1ReplSet", "HOT_ELECTRONICS")
+sh.addShardToZone("hotShard2ReplSet", "HOT_ELECTRONICS")
+
+sh.updateZoneKeyRange(
+  "shop.products",
+  { category: "electronics", _id: MinKey },
+  { category: "electronics", _id: MaxKey },
+  "HOT_ELECTRONICS"
+)
+```
+
+Нижняя граница диапазона включается, верхняя не включается. В зону обязательно
+включаются как минимум два шарда: назначение всей горячей категории одному
+шарду только закрепило бы hotspot. Незонированные категории balancer может
+распределять по остальным доступным шардам обычным способом.
+
+Это не бесплатная замена выбранному в задании 7 ключу `{_id: "hashed"}`. При
+ключе `{category: 1, _id: "hashed"}` запрос по одному `_id` без `category`
+становится scatter-gather, поэтому API должен передавать оба значения либо
+использовать отдельный lookup/read model. Переход существующей коллекции требует
+контролируемого resharding. Zones следует применять при реальном требовании к
+локализации или отдельному классу оборудования; обычный перекос сначала
+устраняется хорошим shard key, достаточным числом chunks и работой balancer.
+
 ## 4. Задание 9. Чтение с реплик и консистентность
 
 Для денежных операций и остатков используются `writeConcern: "majority"` и
@@ -438,6 +482,8 @@ Repair выполняется оркестратором по узлам и ди
 
 - [MongoDB: Sharding](https://www.mongodb.com/docs/manual/sharding/)
 - [MongoDB: Reshard a Collection](https://www.mongodb.com/docs/manual/core/sharding-reshard-a-collection/)
+- [MongoDB: Zones](https://www.mongodb.com/docs/manual/core/zone-sharding/)
+- [MongoDB: sh.updateZoneKeyRange()](https://www.mongodb.com/docs/manual/reference/method/sh.updateZoneKeyRange/)
 - [MongoDB: maxStalenessSeconds](https://www.mongodb.com/docs/manual/core/read-preference-staleness/)
 - [Apache Cassandra: Data Modeling](https://cassandra.apache.org/doc/latest/cassandra/developing/data-modeling/intro.html)
 - [Apache Cassandra: Dynamo architecture and NetworkTopologyStrategy](https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html)
